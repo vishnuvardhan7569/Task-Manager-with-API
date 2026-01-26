@@ -8,26 +8,27 @@ class TasksController < ApplicationController
   # POST /projects/:project_id/tasks
   def create
     project = @current_user.projects.find(params[:project_id])
-    task = project.tasks.create!(
-      task_params.merge(status: "pending")
-    )
+    task = project.tasks.create!(task_params)
     render json: task, status: :created
   end
 
   # PATCH /tasks/:id
   def update
-    task = Task
-      .joins(:project)
-      .where(projects: { user_id: @current_user.id })
-      .find(params[:id])
-
+    task = @current_user.tasks.find(params[:id])
     task.update!(task_params)
     render json: task
+  end
+
+  # DELETE /tasks/:id
+  def destroy
+    task = @current_user.tasks.find(params[:id])
+    task.destroy
+    head :no_content
   end
 
   private
 
   def task_params
-    params.permit(:title, :status)
+    params.permit(:title, :description, :status)
   end
 end

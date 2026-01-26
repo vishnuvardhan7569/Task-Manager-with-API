@@ -10,10 +10,11 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_18_062927) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_26_162606) do
   create_table "projects", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.text "description"
+    t.string "domain"
     t.string "name"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
@@ -22,6 +23,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_18_062927) do
 
   create_table "tasks", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.text "description"
     t.bigint "project_id", null: false
     t.string "status"
     t.string "title"
@@ -32,6 +34,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_18_062927) do
   create_table "users", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email"
+    t.string "gender"
     t.string "name"
     t.string "password_digest"
     t.datetime "updated_at", null: false

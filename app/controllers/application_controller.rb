@@ -9,20 +9,31 @@ class ApplicationController < ActionController::API
   private
 
   def authorize_request
-    token = request.headers["Authorization"]&.split&.last
-    raise JWT::DecodeError, "Missing token" unless token
+    header = request.headers["Authorization"]
+    token = header&.split&.last
 
-    payload = decode_token(token)
-    @current_user = User.find(payload["user_id"])
-  rescue JWT::DecodeError, ActiveRecord::RecordNotFound
-    render json: { error: "Unauthorized" }, status: :unauthorized
+    if token
+      begin
+        payload = decode_token(token)
+        @current_user = User.find(payload["user_id"])
+      rescue JWT::DecodeError => e
+        render json: { error: "Token Invalid: #{e.message}" }, status: :unauthorized
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: "User not found" }, status: :unauthorized
+      end
+    else
+      render json: { error: "Authorization token missing" }, status: :unauthorized
+    end
   end
 
   def record_not_found(e)
-    render json: { error: e.message }, status: :not_found
+    render json: { error: "#{e.model} not found" }, status: :not_found
   end
 
   def record_invalid(e)
-    render json: { error: e.record.errors.full_messages }, status: :unprocessable_entity
+    render json: {
+      error: "Validation failed",
+      errors: e.record.errors.full_messages
+    }, status: :unprocessable_entity
   end
 end

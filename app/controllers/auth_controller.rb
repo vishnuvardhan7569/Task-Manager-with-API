@@ -8,25 +8,31 @@ class AuthController < ApplicationController
   end
 
   def login
-    user = User.find_by(email: params[:email]&.downcase)
+    login_params = params[:user] || params
+    user = User.find_by(email: login_params[:email]&.downcase)
 
-    if user&.authenticate(params[:password])
-      render json: auth_response(user)
+    if user&.authenticate(login_params[:password])
+      render json: auth_response(user), status: :ok
     else
-      render json: { error: "Invalid credentials" }, status: :unauthorized
+      render json: { error: "Invalid email or password" }, status: :unauthorized
     end
   end
 
   private
 
   def user_params
-    params.permit(:name, :email, :password)
+    params.require(:user).permit(:name, :email, :password, :password_confirmation, :gender)
   end
 
   def auth_response(user)
     {
       token: encode_token(user_id: user.id),
-      user: { id: user.id, name: user.name, email: user.email }
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        gender: user.gender
+      }
     }
   end
 end
