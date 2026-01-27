@@ -6,7 +6,7 @@ class User < ApplicationRecord
   has_many :projects, dependent: :destroy
   has_many :tasks, through: :projects
 
-  before_validation { self.email = email.downcase if email.present? }
+  before_validation { self.email = email if email.present? }
 
   validates :email, presence: true, uniqueness: true
   validates :name, presence: true

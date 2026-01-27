@@ -1,5 +1,5 @@
 class Task < ApplicationRecord
-  STATUSES = %w[pending in_progress completed].freeze
+  STATUSES = %w[not_started in_progress completed].freeze
 
   belongs_to :project
 

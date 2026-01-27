@@ -9,7 +9,7 @@ class AuthController < ApplicationController
 
   def login
     login_params = params[:user] || params
-    user = User.find_by(email: login_params[:email]&.downcase)
+    user = User.find_by(email: login_params[:email])
 
     if user&.authenticate(login_params[:password])
       render json: auth_response(user), status: :ok
