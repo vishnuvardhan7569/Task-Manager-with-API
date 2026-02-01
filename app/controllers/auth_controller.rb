@@ -4,6 +4,7 @@ class AuthController < ApplicationController
 
   def signup
     user = User.create!(user_params)
+    UserMailer.welcome_email(user).deliver_now
     render json: auth_response(user), status: :created
   end
 

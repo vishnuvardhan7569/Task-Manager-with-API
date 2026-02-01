@@ -2,6 +2,7 @@ Rails.application.routes.draw do
   post "/signup", to: "auth#signup"
   post "/login", to: "auth#login"
   get "/me", to: "users#me"
+  delete "/account", to: "users#destroy"
 
   resources :projects do
     resources :tasks

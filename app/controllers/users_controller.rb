@@ -7,4 +7,11 @@ class UsersController < ApplicationController
       gender: @current_user.gender
     }
   end
+
+  def destroy
+    @current_user.destroy
+    render json: { message: "Account deleted successfully" }, status: :ok
+  rescue ActiveRecord::RecordNotDestroyed => e
+    render json: { error: "Failed to delete account" }, status: :unprocessable_entity
+  end
 end

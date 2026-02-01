@@ -1,4 +1,6 @@
 class ProjectsController < ApplicationController
+  include ProjectStats
+
   before_action :set_project, only: [ :show, :update, :destroy ]
 
   def index
@@ -18,21 +20,7 @@ class ProjectsController < ApplicationController
     projects = projects_scope.offset((page - 1) * limit).limit(limit)
 
     render json: {
-      projects: projects.map do |p|
-        total = p.try(:total_tasks).to_i
-        completed = p.try(:completed_tasks).to_i
-        percent = total.positive? ? ((completed.to_f / total) * 100).round : 0
-
-        {
-          id: p.id,
-          name: p.name,
-          domain: p.domain,
-          description: p.description,
-          total_tasks: total,
-          completed_tasks: completed,
-          percent: percent
-        }
-      end,
+      projects: projects.map { |p| project_json(p) },
       total_projects: total_projects,
       page: page,
       limit: limit
@@ -40,50 +28,17 @@ class ProjectsController < ApplicationController
   end
 
   def show
-    total = @project.tasks.count
-    completed = @project.tasks.where(status: 'completed').count
-    percent = total.positive? ? ((completed.to_f / total) * 100).round : 0
-
-    render json: {
-      id: @project.id,
-      name: @project.name,
-      domain: @project.domain,
-      description: @project.description,
-      total_tasks: total,
-      completed_tasks: completed,
-      percent: percent
-    }
+    render json: project_json(@project)
   end
 
   def create
     project = @current_user.projects.create!(project_params)
-
-    render json: {
-      id: project.id,
-      name: project.name,
-      domain: project.domain,
-      description: project.description,
-      total_tasks: 0,
-      completed_tasks: 0,
-      percent: 0
-    }, status: :created
+    render json: project_json(project), status: :created
   end
 
   def update
     @project.update!(project_params)
-    total = @project.tasks.count
-    completed = @project.tasks.where(status: 'completed').count
-    percent = total.positive? ? ((completed.to_f / total) * 100).round : 0
-
-    render json: {
-      id: @project.id,
-      name: @project.name,
-      domain: @project.domain,
-      description: @project.description,
-      total_tasks: total,
-      completed_tasks: completed,
-      percent: percent
-    }
+    render json: project_json(@project)
   end
 
   def destroy
@@ -99,5 +54,21 @@ class ProjectsController < ApplicationController
 
   def project_params
     params.permit(:name, :domain, :description)
+  end
+
+  def project_json(project)
+    total = project.try(:total_tasks).to_i
+    completed = project.try(:completed_tasks).to_i
+    percent = total.positive? ? ((completed.to_f / total) * 100).round : 0
+
+    {
+      id: project.id,
+      name: project.name,
+      domain: project.domain,
+      description: project.description,
+      total_tasks: total,
+      completed_tasks: completed,
+      percent: percent
+    }
   end
 end

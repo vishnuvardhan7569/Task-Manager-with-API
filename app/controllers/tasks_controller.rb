@@ -1,8 +1,9 @@
 class TasksController < ApplicationController
-  before_action :set_project
-  before_action :set_task, only: [:update, :destroy]
+  include ProjectStats
 
-  # GET /projects/:project_id/tasks
+  before_action :set_project
+  before_action :set_task, only: [ :update, :destroy ]
+
   def index
     page = (params[:page] || 1).to_i
     limit = (params[:limit] || 10).to_i
@@ -11,52 +12,32 @@ class TasksController < ApplicationController
     tasks = @project.tasks.order(:id).offset((page - 1) * limit).limit(limit)
 
     render json: {
-      tasks: tasks.map { |t| { id: t.id, title: t.title, description: t.description, status: t.status } },
+      tasks: tasks.map { |t| task_json(t) },
       total_tasks: total_tasks,
       page: page,
       limit: limit
     }
   end
 
-  # POST /projects/:project_id/tasks
   def create
     task = @project.tasks.create!(task_params)
-    @project.reload
-
-    total = @project.tasks.count
-    completed = @project.tasks.where(status: 'completed').count
-    percent = total.positive? ? ((completed.to_f / total) * 100).round : 0
-
     render json: {
-      task: { id: task.id, title: task.title, description: task.description, status: task.status },
-      project_summary: { id: @project.id, total_tasks: total, completed_tasks: completed, percent: percent }
+      task: task_json(task),
+      project_summary: project_summary(@project)
     }, status: :created
   end
 
-  # PATCH /projects/:project_id/tasks/:id
   def update
     @task.update!(task_params)
-
-    total = @project.tasks.count
-    completed = @project.tasks.where(status: 'completed').count
-    percent = total.positive? ? ((completed.to_f / total) * 100).round : 0
-
     render json: {
-      task: { id: @task.id, title: @task.title, description: @task.description, status: @task.status },
-      project_summary: { id: @project.id, total_tasks: total, completed_tasks: completed, percent: percent }
+      task: task_json(@task),
+      project_summary: project_summary(@project)
     }
   end
 
-  # DELETE /projects/:project_id/tasks/:id
   def destroy
     @task.destroy
-    @project.reload
-
-    total = @project.tasks.count
-    completed = @project.tasks.where(status: 'completed').count
-    percent = total.positive? ? ((completed.to_f / total) * 100).round : 0
-
-    render json: { project_summary: { id: @project.id, total_tasks: total, completed_tasks: completed, percent: percent } }
+    render json: { project_summary: project_summary(@project) }
   end
 
   private
@@ -71,5 +52,9 @@ class TasksController < ApplicationController
 
   def task_params
     params.permit(:title, :description, :status)
+  end
+
+  def task_json(task)
+    { id: task.id, title: task.title, description: task.description, status: task.status }
   end
 end
