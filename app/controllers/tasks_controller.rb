@@ -51,7 +51,12 @@ class TasksController < ApplicationController
   end
 
   def task_params
-    params.permit(:title, :description, :status)
+    # Accept both flat params and nested task params from Ant Design Form
+    if params[:task]
+      params.require(:task).permit(:title, :description, :status)
+    else
+      params.permit(:title, :description, :status)
+    end
   end
 
   def task_json(task)

@@ -53,12 +53,17 @@ class ProjectsController < ApplicationController
   end
 
   def project_params
-    params.permit(:name, :domain, :description)
+    # Accept both flat params and nested project params from Ant Design Form
+    if params[:project]
+      params.require(:project).permit(:name, :domain, :description)
+    else
+      params.permit(:name, :domain, :description)
+    end
   end
 
   def project_json(project)
-    total = project.try(:total_tasks).to_i
-    completed = project.try(:completed_tasks).to_i
+    total = project.attributes["total_tasks"].to_i
+    completed = project.attributes["completed_tasks"].to_i
     percent = total.positive? ? ((completed.to_f / total) * 100).round : 0
 
     {
