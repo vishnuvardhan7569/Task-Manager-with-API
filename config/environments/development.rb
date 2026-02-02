@@ -41,10 +41,15 @@ Rails.application.configure do
   # Emails are intercepted by DevelopmentMailInterceptor and redirected to MAIL_INTERCEPTOR_ADDRESS
   # See app/interceptors/development_mail_interceptor.rb for details
 
-  # File delivery method - saves emails to tmp/mails for viewing
-  # Emails are intercepted and redirected before delivery
-  config.action_mailer.delivery_method = :file
-  config.action_mailer.file_settings = { location: Rails.root.join("tmp", "mails") }
+  # SMTP delivery for development (requires MailCatcher or SMTP server)
+  # Install: gem install mailcatcher
+  # Run: mailcatcher (starts SMTP on localhost:1025, web UI on localhost:1080)
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.smtp_settings = {
+    address: ENV.fetch("SMTP_ADDRESS", "localhost"),
+    port: ENV.fetch("SMTP_PORT", "1025").to_i,
+    domain: "localhost"
+  }
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
